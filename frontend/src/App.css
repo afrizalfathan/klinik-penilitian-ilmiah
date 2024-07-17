@@ -1,0 +1,33 @@
+.background_jumbotron {
+  background-color: #97e7e1;
+}
+
+.jumbotron_about {
+  background-color: #6ad4dd;
+}
+
+.header-button {
+  border: none;
+  border-radius: 7px;
+  color: white;
+  background-color: #7aa2e3;
+}
+
+.header-button:hover {
+  background-color: white;
+  color: black;
+  transition: 0.5s;
+}
+
+.layanan-button-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-page {
+  margin-top: 1%;
+}
+
+.queue-list-detail {
+  list-style-type: none;
+}
