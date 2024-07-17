@@ -1,12 +1,13 @@
 const express = require("express");
 const nodemailer = require("nodemailer");
+const { USER, PASSAPPS } = require("../config/env");
 
 const router = express.Router();
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
-    user: "refleurflower@gmail.com",
-    pass: "ngvd imhb duff kuvb",
+    user: USER,
+    pass: PASSAPPS,
   },
 });
 
