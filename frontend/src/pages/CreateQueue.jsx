@@ -8,6 +8,8 @@ import Axios from "axios";
 import { useNavigate } from "react-router-dom";
 import InputGroup from "react-bootstrap/InputGroup";
 
+import otpHandler from "../components/otpHandler";
+
 function Queue() {
   const [nama, setNama] = useState("");
   const [no_hp, setNo_hp] = useState("");
@@ -45,35 +47,17 @@ function Queue() {
     if (parseInt(otp) === otpGenerator) {
       try {
         console.log("oh yeah!!!");
-        await Axios.post("http://localhost:3000/queue/create_queue", queueData);
-        localStorage.setItem("queueData", JSON.stringify(queueData));
+        Axios.post("http://localhost:3000/queue/create_queue", queueData);
+        localStorage.setItem(
+          "queueData",
+          JSON.stringify({ ...queueData, queueData })
+        );
         navigate(`/queue/details/${idHandler}`);
       } catch (err) {
         console.log("Error in createAntrian: ", err);
       }
     } else {
       setOtpValidasi(false);
-    }
-  }
-
-  async function otpHandler(e) {
-    e.preventDefault();
-
-    const otpRandom = Math.round(Math.random() * 999);
-    console.log(otp);
-    setOtpGenerator(otpRandom);
-    console.log(otpRandom);
-
-    try {
-      Axios.post("http://localhost:3000/email_routes/email_send", {
-        from: "refleurflower@gmail.com",
-        to: email,
-        subject: "Kode OTP untuk Verifikasi",
-        message: `Hai, kode otp kamu ${otpGenerator}`,
-      });
-      alert("Kode OTP sudah dikirim, silahkan cek email anda!");
-    } catch (error) {
-      console.log(error);
     }
   }
 
@@ -120,7 +104,7 @@ function Queue() {
                 <Button
                   variant="warning h-50 ms-4"
                   style={{ marginTop: "5.8%", marginLeft: "2%" }}
-                  onClick={(e) => otpHandler(e)}
+                  onClick={(e) => otpHandler({ setOtpGenerator, e, email })}
                 >
                   Send OTP
                 </Button>

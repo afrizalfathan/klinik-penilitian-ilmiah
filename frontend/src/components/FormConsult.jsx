@@ -11,6 +11,12 @@ function FormConsult({
   setTanggalLahir,
   setAlamat,
   createConsultHandler,
+  setEmail,
+  otpHandler,
+  email,
+  setOtpGenerator,
+  setOtp,
+  otpValidasi,
 }) {
   return (
     <div className="create-consult-pages">
@@ -31,6 +37,24 @@ function FormConsult({
               placeholder="Masukan No HP"
               onChange={(e) => setNo_hp(e.target.value)}
             />
+          </Form.Group>
+          <Form.Group className="mb-3 d-flex" controlId="formEmail">
+            <div className="form-email-section">
+              <Form.Label>Email : </Form.Label>
+              <Form.Control
+                type="email"
+                placeholder="Masukan Email"
+                style={{ width: "61vh" }}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <Button
+              variant="warning h-50 ms-4"
+              style={{ marginTop: "5.8%", marginLeft: "2%" }}
+              onClick={(e) => otpHandler({ setOtpGenerator, e, email })}
+            >
+              Send OTP
+            </Button>
           </Form.Group>
           <Form.Group className="mb-3" controlId="formGender">
             <Form.Label>Pilih Jenis Kelamin : </Form.Label>
@@ -78,6 +102,14 @@ function FormConsult({
               onChange={(e) => setAlamat(e.target.value)}
             />
           </Form.Group>
+          <div className="otp-section">
+            <Form.Label>Kode OTP</Form.Label>
+            <Form.Control
+              type="number"
+              onChange={(e) => setOtp(e.target.value)}
+            />
+            {otpValidasi === false && <span>Otp Salah</span>}
+          </div>
           <Button variant="primary" onClick={createConsultHandler}>
             Submit
           </Button>
