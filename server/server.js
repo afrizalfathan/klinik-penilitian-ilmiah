@@ -9,6 +9,8 @@ const userRoutes = require("./routes/user_routes");
 const konsulRoutes = require("./routes/konsul_routes");
 const emailRoutes = require("./routes/email_routes");
 
+const path = require("path");
+
 const app = express();
 
 app.use(
@@ -21,15 +23,26 @@ app.use(
 );
 
 app.use(bodyParser.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Memuat relasi antar model
+require("./models/associations");
 
 sequelize
   .authenticate()
-  .then(() => console.log("DB Connected!"))
+  .then(() => {
+    console.log("DB Connected!");
+    // // Sinkronisasi model dengan database
+    // return sequelize.sync({ alter: true }); // `alter: true` untuk memperbarui tabel yang ada sesuai model
+  })
+  .then(() => {
+    console.log("Tables have been synced!");
+  })
   .catch((error) => console.log(error));
 
 // Routes
 app.use("/queue", antrianRoutes);
-app.use("/user", userRoutes); // Include user routes
+app.use("/user", userRoutes);
 app.use("/konsul", konsulRoutes);
 app.use("/email_routes", emailRoutes);
 

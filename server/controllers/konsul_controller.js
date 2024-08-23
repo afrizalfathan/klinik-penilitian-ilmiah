@@ -1,80 +1,104 @@
-const express = require("express");
 const { sequelize } = require("../config/db_conn");
 const Konsultasi = require("../models/konsul_models");
-const router = express.Router();
+const Pasien = require("../models/Pasien_models");
 
-const createConsult = async (
+async function createConsult(
   id,
   nama,
   no_hp,
+  email,
+  usia,
   jenis_kelamin,
-  tanggal_lahir,
   alergi,
+  keluhan,
   alamat,
-  keluhan
-) => {
-  sequelize
-    .sync()
-    .then(() => {
-      console.log("1 Record Added!");
-
-      Konsultasi.create({
-        id,
-        nama,
-        no_hp,
-        alergi,
-        jenis_kelamin,
-        keluhan,
-        alamat,
-        tanggal_lahir,
-      });
-    })
-    .then((res) => console.log(res))
-    .catch((error) => console.log(error));
-};
-
-const readAllKonsul = async () => {
+  m_pembayaran
+) {
   try {
-    const konsulFindAll = await Konsultasi.findAll();
-    return konsulFindAll;
-  } catch (error) {
-    console.log(error);
-  }
-};
+    await sequelize.sync();
 
-const checkKonsul = async (id) => {
-  try {
-    const konsulFindID = await Konsultasi.findOne({
-      where: {
-        id,
-      },
+    const newPasien = await Pasien.create({
+      nama,
+      no_hp,
+      email,
+      usia,
+      jenis_kelamin,
     });
-    return konsulFindID;
-  } catch (error) {
-    console.log(error);
-  }
-};
 
-const readKonsul = async (id) => {
-  try {
-    const konsulFind = await Konsultasi.findOne({
-      where: {
-        id,
-      },
+    const pasien_id = newPasien.pasien_id;
+
+    await Konsultasi.create({
+      konsultasi_id: id,
+      alergi,
+      keluhan,
+      alamat,
+      m_pembayaran,
+      pasien_id: pasien_id,
+      k_status: "Proses",
     });
-    return konsulFind;
+    console.log("1 Record Added!");
   } catch (error) {
     console.log(error);
   }
-};
+}
 
-const updateConsult = async (id, obat) => {
+async function readAllKonsul() {
   try {
-    const konsultasi = await Konsultasi.findOne({ where: { id } });
+    return await Konsultasi.findAll({
+      include: [
+        {
+          model: Pasien,
+          attributes: ["nama", "no_hp", "email", "jenis_kelamin", "usia"],
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function checkKonsul(id) {
+  try {
+    return await Konsultasi.findOne({
+      where: { konsultasi_id: id },
+      include: [
+        {
+          model: Pasien,
+          attributes: ["nama", "no_hp", "email", "jenis_kelamin", "usia"],
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function readKonsul(id) {
+  try {
+    return await Konsultasi.findOne({
+      where: { konsultasi_id: id },
+      include: [
+        {
+          model: Pasien,
+          attributes: ["nama", "no_hp", "email", "jenis_kelamin", "usia"],
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function updateConsult(id, obat, status) {
+  try {
+    const konsultasi = await Konsultasi.findOne({
+      where: { konsultasi_id: id },
+    });
     if (konsultasi) {
       if (obat) {
         konsultasi.obat = obat;
       }
+      konsultasi.k_status = status;
       await konsultasi.save();
       return konsultasi;
     } else {
@@ -83,7 +107,7 @@ const updateConsult = async (id, obat) => {
   } catch (error) {
     throw error;
   }
-};
+}
 
 module.exports = {
   createConsult,

@@ -4,11 +4,13 @@ import Col from "react-bootstrap/Col";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
 import Axios from "axios";
 import { useNavigate } from "react-router-dom";
 import InputGroup from "react-bootstrap/InputGroup";
+import validator from "validator";
 
-import otpHandler from "../components/otpHandler";
+import sendEmail from "../components/sendEmail";
 
 function Queue() {
   const [nama, setNama] = useState("");
@@ -21,12 +23,19 @@ function Queue() {
   const [otpGenerator, setOtpGenerator] = useState("");
   const [otp, setOtp] = useState(0);
   const [otpValidasi, setOtpValidasi] = useState(true);
+  const [usia, setUsia] = useState(0);
+
+  const [showError, setShowError] = useState({
+    nama: false,
+    no_hp: false,
+    email: false,
+    jenis_kelamin: false,
+    tanggal: false,
+    usia: false,
+    shift: false,
+  });
 
   let navigate = useNavigate();
-
-  function idKey() {
-    return Date.now();
-  }
 
   async function createAntrian() {
     const idHandler = idKey();
@@ -38,27 +47,54 @@ function Queue() {
       email,
       jenis_kelamin,
       tanggal,
+      usia,
       shift,
     };
 
-    console.log(queueData);
+    // Validasi input
+    const errors = {
+      nama: !nama,
+      no_hp: !no_hp || !validator.isMobilePhone(no_hp, "id-ID"),
+      email: !email || !validator.isEmail(email),
+      jenis_kelamin: !jenis_kelamin,
+      tanggal: !tanggal,
+      usia: !usia,
+      shift: !shift,
+    };
 
-    console.log(otp, otpGenerator);
-    if (parseInt(otp) === otpGenerator) {
-      try {
-        console.log("oh yeah!!!");
-        Axios.post("http://localhost:3000/queue/create_queue", queueData);
-        localStorage.setItem(
-          "queueData",
-          JSON.stringify({ ...queueData, queueData })
-        );
-        navigate(`/queue/details/${idHandler}`);
-      } catch (err) {
-        console.log("Error in createAntrian: ", err);
-      }
-    } else {
-      setOtpValidasi(false);
+    setShowError(errors);
+    // Cek jika ada error, hentikan submit
+    if (Object.values(errors).some((error) => error)) {
+      return;
     }
+
+    try {
+      const response = await Axios.post(
+        "http://localhost:3000/queue/create_queue",
+        queueData
+      );
+
+      if (response.status === 201) {
+        navigate(`/queue/details/${idHandler}`);
+      } else {
+        console.log("Gagal membuat antrean:", response.data.error);
+      }
+    } catch (err) {
+      console.log("Error in createAntrian: ", err);
+    }
+  }
+
+  function idKey() {
+    const date = new Date();
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear().toString();
+    const randomNumber = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0");
+
+    const result = `01_${day}_${month}_${year}_${randomNumber}`;
+    return result;
   }
 
   return (
@@ -75,87 +111,153 @@ function Queue() {
         <Col>
           <div className="form-antrian">
             <Form>
-              <Form.Group className="mb-3" controlId="formNama">
-                <Form.Label>Nama : </Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Masukan Nama"
-                  onChange={(e) => setNama(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="formNomorHP">
-                <Form.Label>Nomor HP</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Masukan Nomor HP"
-                  onChange={(e) => setNo_hp(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3 d-flex" controlId="formEmail">
-                <div className="form-email-section">
-                  <Form.Label>Email : </Form.Label>
-                  <Form.Control
-                    type="email"
-                    placeholder="Masukan Email"
-                    style={{ width: "61vh" }}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <Button
-                  variant="warning h-50 ms-4"
-                  style={{ marginTop: "5.8%", marginLeft: "2%" }}
-                  onClick={(e) => otpHandler({ setOtpGenerator, e, email })}
-                >
-                  Send OTP
-                </Button>
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="formGender">
-                <Form.Label>Pilih Jenis Kelamin : </Form.Label>
-                <Form.Select
-                  defaultValue=""
-                  className="mb-3"
-                  onChange={(e) => setJenis_kelamin(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Jenis Kelamin
-                  </option>
-                  <option value="Laki-Laki">Laki Laki</option>
-                  <option value="Perempuan">Perempuan</option>
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="formDate">
-                <Form.Label>Tanggal : </Form.Label>
-                <Form.Control
-                  type="date"
-                  placeholder="Masukan tanggal"
-                  onChange={(e) => setTanggal(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Select
-                className="mb-3"
-                defaultValue=""
-                onChange={(e) => setShift(e.target.value)}
-              >
-                <option value="" disabled>
-                  Pilih Shift
-                </option>
-                <option value="Shift 1 : 06.30 - 8.30">
-                  Shift 1 : 06.30 - 8.30
-                </option>
-                <option value="Shift 2 : 16.30 - 19.30">
-                  Shift 2 : 16.30 - 19.30
-                </option>
-              </Form.Select>
-
-              <div className="otp-section">
-                <Form.Label>Kode OTP</Form.Label>
-                <Form.Control
-                  type="number"
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-                {otpValidasi === false && <span>Otp Salah</span>}
-              </div>
-
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formNama">
+                    <Form.Label>Nama : </Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Masukan Nama"
+                      onChange={(e) => setNama(e.target.value)}
+                    />
+                    {showError.nama && (
+                      <Alert variant="danger">Nama tidak boleh kosong</Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formUsia">
+                    <Form.Label>Usia : </Form.Label>
+                    <Form.Control
+                      type="number"
+                      placeholder="Masukan Usia"
+                      onChange={(e) => setUsia(e.target.value)}
+                    />
+                    {showError.usia && (
+                      <Alert variant="danger">Usia tidak boleh kosong</Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formNomorHP">
+                    <Form.Label>Nomor HP</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Masukan Nomor HP"
+                      onChange={(e) => setNo_hp(e.target.value)}
+                    />
+                    {showError.no_hp && (
+                      <Alert variant="danger">
+                        Nomor HP tidak boleh kosong atau tidak valid
+                      </Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formEmail">
+                    <Form.Label>Email : </Form.Label>
+                    <Form.Control
+                      type="email"
+                      placeholder="Masukan Email"
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <Button
+                      variant="warning h-50 ms-4"
+                      style={{ marginTop: "10px" }}
+                      onClick={(e) =>
+                        sendEmail({
+                          setOtpGenerator,
+                          e,
+                          email,
+                          subject: "Kode OTP untuk Verifikasi",
+                        })
+                      }
+                    >
+                      Send OTP
+                    </Button>
+                    {showError.email && (
+                      <Alert variant="danger" className="mt-2">
+                        Email tidak boleh kosong atau tidak valid
+                      </Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formGender">
+                    <Form.Label>Pilih Jenis Kelamin : </Form.Label>
+                    <Form.Select
+                      defaultValue=""
+                      className="mb-3"
+                      onChange={(e) => setJenis_kelamin(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Jenis Kelamin
+                      </option>
+                      <option value="Laki-Laki">Laki Laki</option>
+                      <option value="Perempuan">Perempuan</option>
+                    </Form.Select>
+                    {showError.jenis_kelamin && (
+                      <Alert variant="danger">
+                        Jenis kelamin tidak boleh kosong
+                      </Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formDate">
+                    <Form.Label>Tanggal : </Form.Label>
+                    <Form.Control
+                      type="date"
+                      placeholder="Masukan tanggal"
+                      onChange={(e) => setTanggal(e.target.value)}
+                    />
+                    {showError.tanggal && (
+                      <Alert variant="danger">Tanggal tidak boleh kosong</Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-3" controlId="formShift">
+                    <Form.Label>Pilih Shift : </Form.Label>
+                    <Form.Select
+                      defaultValue=""
+                      className="mb-3"
+                      onChange={(e) => setShift(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Pilih Shift
+                      </option>
+                      <option value="Shift 1 : 06.30 - 8.30">
+                        Shift 1 : 06.30 - 8.30
+                      </option>
+                      <option value="Shift 2 : 16.30 - 19.30">
+                        Shift 2 : 16.30 - 19.30
+                      </option>
+                    </Form.Select>
+                    {showError.shift && (
+                      <Alert variant="danger">Shift tidak boleh kosong</Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-3 otp-section" controlId="formOtp">
+                    <Form.Label>Kode OTP : </Form.Label>
+                    <Form.Control
+                      type="number"
+                      onChange={(e) => setOtp(e.target.value)}
+                    />
+                    {otpValidasi === false && (
+                      <Alert variant="danger">OTP Salah</Alert>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
               <Button
                 className="mt-3 mb-5"
                 variant="primary"
@@ -167,7 +269,7 @@ function Queue() {
           </div>
         </Col>
         <Col>
-          <div className="aside-antrian ms-5 ">
+          <div className="aside-antrian">
             <h3>Cek Antrian Anda</h3>
             <InputGroup className="mb-3">
               <Form.Control
@@ -178,7 +280,7 @@ function Queue() {
                 variant="warning"
                 onClick={() => navigate(`/queue/details/${searchAntrian}`)}
               >
-                Button
+                Cek Antrian
               </Button>
             </InputGroup>
           </div>

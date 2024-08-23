@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import ReadKonsultasi from "./pages/ReadKonsultasi";
 import DetailsKonsul from "./pages/DetailsKonsul";
 import CheckKonsul from "./pages/CheckKonsul";
+import QueueDisplay from "./components/QueueDisplay";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="konsul" element={<CreateConsult />} />
           <Route path="queue/details/:id" element={<DetailsQueue />} />
+          <Route path="queue/queue_display" element={<QueueDisplay />} />
           <Route path="konsul/details/:id" element={<CheckKonsul />} />
         </Route>
         <Route

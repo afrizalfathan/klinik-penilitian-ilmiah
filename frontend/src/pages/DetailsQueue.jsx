@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Axios from "axios";
 import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 function DetailsQueue() {
   const { id } = useParams();
@@ -35,34 +37,38 @@ function DetailsQueue() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center queue-details-page">
+    <Container className="queue-details-page d-flex justify-content-center align-items-center">
       {details.map((element, index) => (
-        <div
-          className="details-body"
-          key={index}
-          style={{
-            marginTop: "10vh",
-            height: "70vh",
-            padding: "15vh",
-            borderRadius: "10px",
-            boxShadow: "rgba(99, 99, 99, 0.2) 0px 2px 8px 0px",
-          }}
-        >
-          <h3 className="text-center mb-2">Kode Antrian : {element.id}</h3>
-
-          <h3 className="text-center ">
-            Nomor Antrian anda <br />
-          </h3>
-          <h3 className="text-center mt-2 mb-2">{element.antrian}</h3>
-          <ul className="queue-list-detail mt-3">
-            <li className="mt-2">Nama : {element.nama}</li>
-            <li className="mt-2">No HP : {element.no_hp}</li>
-            <li className="mt-2">Email : {element.email}</li>
-            <li className="mt-2">Jenis Kelamin : {element.jenis_kelamin}</li>
-            <li className="mt-2">Tanggal : {element.tanggal}</li>
-            <li className="mt-2">Shift : {element.shift}</li>
-          </ul>
-        </div>
+        <Row key={index} className="w-100">
+          <Col className="d-flex justify-content-center">
+            <div
+              className="details-body text-center p-4 rounded"
+              style={{
+                marginTop: "2vh",
+                backgroundColor: "#FEFAE0",
+                width: "100%",
+                maxWidth: "500px", // Limit the width on larger screens
+              }}
+            >
+              <h3 className="mb-2">Kode Antrian : {element.antrian_id}</h3>
+              <h3 className="mb-2">Nomor Antrian anda</h3>
+              <h3 className="my-2">{element.antrian}</h3>
+              <p className="text-center">
+                <b>{`(Pastikan screenshot halaman ini!)`}</b>
+              </p>
+              <ul className="queue-list-detail mt-3 list-unstyled">
+                <li className="mt-2">Nama : {element.Pasien.nama}</li>
+                <li className="mt-2">No HP : {element.Pasien.no_hp}</li>
+                <li className="mt-2">Email : {element.Pasien.email}</li>
+                <li className="mt-2">
+                  Jenis Kelamin : {element.Pasien.jenis_kelamin}
+                </li>
+                <li className="mt-2">Tanggal : {element.tanggal}</li>
+                <li className="mt-2">Shift : {element.shift}</li>
+              </ul>
+            </div>
+          </Col>
+        </Row>
       ))}
     </Container>
   );

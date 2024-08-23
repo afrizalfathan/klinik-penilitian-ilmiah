@@ -25,6 +25,9 @@ function Navigation() {
               <Nav.Link href="/queue" className="mt-2">
                 <h5 className="fw-normal">Antrian</h5>
               </Nav.Link>
+              <Nav.Link href="/queue/queue_display" className="mt-2">
+                <h5 className="fw-normal">Daftar Antrian</h5>
+              </Nav.Link>
               <Nav.Link href="/konsul" className="mt-2">
                 <h5 className="fw-normal">Konsul</h5>
               </Nav.Link>

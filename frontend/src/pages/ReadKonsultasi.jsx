@@ -30,18 +30,19 @@ function ReadKonsultasi() {
             <th>Usia</th>
             <th>Keluhan</th>
             <th>Obat</th>
+            <th>Total</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {data.map((element, index) => (
             <tr key={index}>
-              <td>{element.nama}</td>
-              <td>{element.no_hp}</td>
-              <td>{element.jenis_kelamin}</td>
+              <td>{element.Pasien.nama}</td>
+              <td>{element.Pasien.no_hp}</td>
+              <td>{element.Pasien.jenis_kelamin}</td>
               <td>{element.alergi}</td>
               <td>{element.alamat}</td>
-              <td>{element.createdAt}</td>
+              <td>{element.Pasien.usia}</td>
               <td>{element.keluhan}</td>
               <td>
                 {element.obat && element.obat.length > 0
@@ -49,15 +50,34 @@ function ReadKonsultasi() {
                       <div key={idx}>
                         <p>Nama Obat: {obat.namaObat}</p>
                         <p>Dosis: {obat.dosis}</p>
+                        <p>Harga: Rp. {obat.harga}</p>
                       </div>
                     ))
                   : "Obat belum dimasukan"}
               </td>
               <td>
+                {element.obat && element.obat.length > 0 ? (
+                  <>
+                    <p>
+                      <strong>Total Harga: </strong>
+                      Rp.{" "}
+                      {element.obat.reduce(
+                        (total, obat) => total + parseInt(obat.harga),
+                        0
+                      )}
+                    </p>
+                  </>
+                ) : (
+                  "-"
+                )}
+              </td>
+              <td>
                 <Button
                   variant="warning"
                   onClick={() =>
-                    navigate(`/admin/konsultasi/konsul_details/${element.id}`)
+                    navigate(
+                      `/admin/konsultasi/konsul_details/${element.konsultasi_id}`
+                    )
                   }
                 >
                   Edit

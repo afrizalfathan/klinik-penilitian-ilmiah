@@ -6,66 +6,49 @@ const {
   readAllAntrian,
   readAntrianShiftDate,
   updateAntrianStatus,
+  deleteAntrian,
+  sortAntrian,
 } = require("../controllers/antrian_controller");
 
 const router = express.Router();
 
 router.post("/create_queue", async (req, res) => {
-  let { id, nama, no_hp, email, jenis_kelamin, shift, tanggal } = req.body;
+  let { id, nama, no_hp, email, jenis_kelamin, shift, tanggal, usia } =
+    req.body;
 
-  // Tambahkan log untuk tanggal di backend
   console.log("Tanggal sebelum formatting: ", tanggal);
 
-  // Konversi tanggal ke format yang benar jika perlu
-  if (isNaN(Date.parse(tanggal))) {
+  const parsedDate = Date.parse(tanggal);
+
+  if (isNaN(parsedDate)) {
     return res.status(400).send({ error: "Invalid date format" });
   }
 
-  // Opsional: Format ulang tanggal ke YYYY-MM-DD jika perlu
-  const formattedTanggal = new Date(tanggal).toISOString().split("T")[0];
+  const formattedTanggal = new Date(parsedDate).toISOString().split("T")[0];
   console.log("Formatted Tanggal: ", formattedTanggal);
 
   const antrianLength = await readAntrianShiftDate(shift, formattedTanggal);
   const antrianHandler = antrianLength < 1 ? 1 : antrianLength + 1;
 
   try {
-    const newAntrian = await createAntrian(
+    await createAntrian(
       id,
+      shift,
+      formattedTanggal,
+      antrianHandler,
       nama,
       no_hp,
       email,
-      jenis_kelamin,
-      shift,
-      formattedTanggal,
-      antrianHandler
+      usia,
+      jenis_kelamin
     );
-    res.status(201).send(newAntrian);
+
+    // Mengirim respons dengan status 201 jika berhasil
+    res.status(201).send({ message: "Antrian created successfully" });
   } catch (error) {
     res.status(500).send({ error: error.message });
   }
 });
-
-// router.post("/create_queue", async (req, res) => {
-//   const { id, nama, no_hp, email, jenis_kelamin, shift, tanggal } = req.body;
-//   const antrianLength = await readAntrianShiftDate(shift, tanggal);
-//   const antrianHandler = antrianLength < 1 ? 1 : antrianLength + 1;
-
-//   try {
-//     const newAntrian = await createAntrian(
-//       id,
-//       nama,
-//       no_hp,
-//       email,
-//       jenis_kelamin,
-//       shift,
-//       tanggal,
-//       antrianHandler
-//     );
-//     res.status(201).send(newAntrian);
-//   } catch (error) {
-//     res.status(500).send({ error: error.message });
-//   }
-// });
 
 router.get("/read_data/:id", async (req, res) => {
   try {
@@ -111,5 +94,33 @@ router.put(
     }
   }
 );
+
+router.delete(
+  "/antrian_del/:id",
+  authenticateJWT,
+  authorizeRole("admin"),
+  async (req, res) => {
+    try {
+      const destAntrian = await deleteAntrian(req.params.id); // Meneruskan ID dari params
+      res.status(200).send(destAntrian);
+    } catch (error) {
+      console.log(error);
+      res.status(500).send("Gagal menghapus antrian");
+    }
+  }
+);
+
+router.get("/shift/:shift/:tanggal", async (req, res) => {
+  const { shift, tanggal } = req.params;
+  const shiftHandler =
+    shift === "1" ? "Shift 1 : 06.30 - 8.30" : "Shift 2 : 16.30 - 19.30";
+  console.log(shiftHandler);
+  try {
+    const antrian = await sortAntrian(shiftHandler, tanggal);
+    res.json(antrian);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching queue data" });
+  }
+});
 
 module.exports = router;

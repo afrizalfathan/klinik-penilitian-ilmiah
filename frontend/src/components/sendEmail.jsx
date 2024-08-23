@@ -1,6 +1,6 @@
 import Axios from "axios";
 
-async function otpHandler({ email, setOtpGenerator, e }) {
+async function sendEmail({ email, setOtpGenerator, e, subject }) {
   e.preventDefault();
   const otpRandom = Math.round(Math.random() * 999); // Membuat kode OTP acak
   setOtpGenerator(otpRandom); // Memperbarui state dengan OTP acak yang baru
@@ -9,7 +9,7 @@ async function otpHandler({ email, setOtpGenerator, e }) {
     await Axios.post("http://localhost:3000/email_routes/email_send", {
       from: "refleurflower@gmail.com",
       to: email,
-      subject: "Kode OTP untuk Verifikasi",
+      subject,
       message: `Hai, kode otp kamu ${otpRandom}`, // Mengirim otpRandom dalam email
     });
     alert("Kode OTP sudah dikirim, silahkan cek email anda!");
@@ -18,4 +18,4 @@ async function otpHandler({ email, setOtpGenerator, e }) {
   }
 }
 
-export default otpHandler;
+export default sendEmail;
